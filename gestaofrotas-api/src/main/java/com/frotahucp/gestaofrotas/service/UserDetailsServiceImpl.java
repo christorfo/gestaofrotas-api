@@ -14,6 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Optional;
+
+import com.frotahucp.gestaofrotas.model.Administrador; 
+import com.frotahucp.gestaofrotas.repository.AdministradorRepository; 
 
 @Service("userDetailsService") // Nome do bean é importante para o Spring Security encontrar
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -21,26 +25,32 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Autowired
     private MotoristaRepository motoristaRepository;
 
+    @Autowired
+    private AdministradorRepository administradorRepository;
+
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        // 1. Tenta encontrar como Administrador primeiro
+        Optional<Administrador> adminOptional = administradorRepository.findByEmail(email);
+        if (adminOptional.isPresent()) {
+            Administrador admin = adminOptional.get();
+            Set<GrantedAuthority> authorities = new HashSet<>();
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMINISTRADOR"));
+            return new User(admin.getEmail(), admin.getSenha(), 
+                            admin.getStatus() == com.frotahucp.gestaofrotas.model.StatusUsuario.ATIVO, 
+                            true, true, true, authorities);
+        }
+        
+        // 2. Se não for admin, tenta encontrar como Motorista
         Motorista motorista = motoristaRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o e-mail: " + email));
 
         Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
-        // Atribuir o papel (role) ao motorista.
-        // Futuramente, isso pode vir de um campo na entidade Motorista ou de uma tabela de papéis.
         grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_MOTORISTA"));
-        // Se o motorista também pudesse ser administrador, você adicionaria "ROLE_ADMINISTRADOR" aqui.
-
-        // TODO: Quando tivermos Administradores, precisaremos de uma lógica para carregá-los também.
-        // Isso pode envolver verificar outra tabela ou ter uma entidade 'Usuario' genérica.
-
+        
         return new User(motorista.getEmail(), motorista.getSenha(),
-                        motorista.getStatus().equals(com.frotahucp.gestaofrotas.model.StatusUsuario.ATIVO), // enabled
-                        true, // accountNonExpired
-                        true, // credentialsNonExpired
-                        true, // accountNonLocked
-                        grantedAuthorities);
+                        motorista.getStatus() == com.frotahucp.gestaofrotas.model.StatusUsuario.ATIVO,
+                        true, true, true, grantedAuthorities);
     }
 }
