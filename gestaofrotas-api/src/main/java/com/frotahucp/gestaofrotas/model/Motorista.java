@@ -47,7 +47,7 @@ public class Motorista {
     @Column(nullable = false, length = 100)
     private String email; // [cite: 25] (Usado para login)
 
-    @Column(nullable = false, length = 60) // Comprimento típico para hash BCrypt
+    @Column(nullable = false, length = 76) // Comprimento típico para hash BCrypt
     private String senha; // [cite: 25] (Armazenará o hash)
 
     @Enumerated(EnumType.STRING)
