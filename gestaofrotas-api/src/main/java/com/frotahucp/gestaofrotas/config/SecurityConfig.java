@@ -1,18 +1,25 @@
 package com.frotahucp.gestaofrotas.config;
 
+import com.frotahucp.gestaofrotas.security.JwtRequestFilter; // Importar o filtro
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy; // Importar para stateless
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter; // Importar para adicionar filtro antes
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    @Autowired
+    private JwtRequestFilter jwtRequestFilter; // Injetar nosso filtro
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -46,26 +53,21 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // Configuração básica de segurança.
-        // Por enquanto, vamos permitir acesso a todos os endpoints para não bloquear
-        // o desenvolvimento da API. E desabilitar CSRF que não é comum em APIs stateless.
-        // ATENÇÃO: Esta configuração é permissiva e precisará ser ajustada
-        // para um ambiente de produção, definindo regras de autorização específicas.
         http
-            .csrf(csrf -> csrf.disable()) // Desabilita CSRF, comum para APIs stateless
+            .csrf(csrf -> csrf.disable()) // Desabilita CSRF
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 1. Torna a API stateless
             .authorizeHttpRequests(authorizeRequests ->
                 authorizeRequests
-                    .requestMatchers("/api/**").permitAll() // Permite acesso a /api/** sem autenticação por enquanto
+                    .requestMatchers("/api/auth/**").permitAll() // 2. Permite acesso aos endpoints de autenticação
                     .requestMatchers("/h2-console/**").permitAll() // Permite acesso ao console H2
-                    .anyRequest().authenticated() // Todas as outras requisições exigem autenticação
+                    .anyRequest().authenticated() // 3. Todas as outras requisições exigem autenticação
             )
-            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin())); // Necessário para o console H2 funcionar em frames
+            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin())); // Para o console H2
 
-        // Adicionar autenticação HTTP Basic ou formulário de login padrão do Spring Security
-        // se não for uma API puramente baseada em token.
-        // http.formLogin(Customizer.withDefaults()); // Habilita o form login padrão
-        // http.httpBasic(Customizer.withDefaults()); // Habilita HTTP Basic Auth
+        // 4. Adiciona o filtro JWT antes do filtro padrão de autenticação de username/password
+        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+
     }
 }
