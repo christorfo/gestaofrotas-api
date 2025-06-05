@@ -38,6 +38,9 @@ public class Motorista {
     @Column(nullable = false, length = 20)
     private String telefone; // [cite: 25]
 
+    @Column(length = 9) // Formato XXXXX-XXX
+    private String cep; // Novo campo para o CEP
+
     @Column(length = 255) // Para o endereço completo
     private String endereco; // [cite: 25] (ViaCEP será tratado depois)
 
@@ -105,6 +108,14 @@ public class Motorista {
         this.telefone = telefone;
     }
 
+    public String getCep() {
+        return cep;
+    }
+
+    public void setCep(String cep) {
+        this.cep = cep;
+    }
+    
     public String getEndereco() {
         return endereco;
     }
