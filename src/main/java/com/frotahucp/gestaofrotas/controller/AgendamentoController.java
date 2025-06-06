@@ -14,6 +14,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import com.frotahucp.gestaofrotas.model.StatusAgendamento;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal; 
+import org.springframework.security.core.userdetails.UserDetails; 
+
 import org.springframework.format.annotation.DateTimeFormat; 
 import java.time.LocalDate; 
 import java.util.List; 
@@ -74,6 +77,13 @@ public class AgendamentoController {
                 dataInicio, dataFim, motoristaId, status
         );
         
+        return ResponseEntity.ok(agendamentos);
+    }
+
+    @GetMapping("/meus-agendamentos")
+    @PreAuthorize("hasRole('MOTORISTA')")
+    public ResponseEntity<List<AgendamentoResponse>> listarMeusAgendamentos(@AuthenticationPrincipal UserDetails userDetails) {
+        List<AgendamentoResponse> agendamentos = agendamentoService.listarAgendamentosDoMotorista(userDetails);
         return ResponseEntity.ok(agendamentos);
     }
 }   

@@ -159,4 +159,19 @@ public class AgendamentoService {
                            .map(AgendamentoResponse::new)
                            .collect(Collectors.toList());
     }    
+
+    @Transactional(readOnly = true)
+    public List<AgendamentoResponse> listarAgendamentosDoMotorista(UserDetails userDetails) {
+        // 1. Encontra o motorista com base no e-mail do usuário autenticado
+        Motorista motorista = motoristaRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Motorista não encontrado para o usuário autenticado."));
+
+        // 2. Usa o novo método do repositório para buscar e ordenar os agendamentos
+        List<Agendamento> agendamentos = agendamentoRepository.findByMotoristaOrderByDataHoraSaidaAsc(motorista);
+
+        // 3. Mapeia as entidades para DTOs de resposta
+        return agendamentos.stream()
+                           .map(AgendamentoResponse::new)
+                           .collect(Collectors.toList());
+    }
 }

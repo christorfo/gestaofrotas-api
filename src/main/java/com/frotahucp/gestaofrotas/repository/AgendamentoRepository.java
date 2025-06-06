@@ -1,12 +1,14 @@
 package com.frotahucp.gestaofrotas.repository;
 
 import com.frotahucp.gestaofrotas.model.Agendamento;
+import com.frotahucp.gestaofrotas.model.Motorista;
+import com.frotahucp.gestaofrotas.model.StatusAgendamento;
+import com.frotahucp.gestaofrotas.model.Veiculo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
-import com.frotahucp.gestaofrotas.model.StatusAgendamento;
-import com.frotahucp.gestaofrotas.model.Veiculo;
-import com.frotahucp.gestaofrotas.model.Motorista;
+
+import java.util.List;
 
 @Repository
 public interface AgendamentoRepository extends JpaRepository<Agendamento, Long>, JpaSpecificationExecutor<Agendamento> {
@@ -15,4 +17,7 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long>,
 
     // Verifica se existe algum agendamento para o motorista com o status especificado
     boolean existsByMotoristaAndStatus(Motorista motorista, StatusAgendamento status);
+
+    // NOVO MÉTODO: Encontra todos os agendamentos para um motorista, ordenados pela data/hora de saída
+    List<Agendamento> findByMotoristaOrderByDataHoraSaidaAsc(Motorista motorista);
 }
