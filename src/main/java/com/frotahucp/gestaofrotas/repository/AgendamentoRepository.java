@@ -20,4 +20,7 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long>,
 
     // NOVO MÉTODO: Encontra todos os agendamentos para um motorista, ordenados pela data/hora de saída
     List<Agendamento> findByMotoristaOrderByDataHoraSaidaAsc(Motorista motorista);
+
+    // MÉTODO ATUALIZADO
+    List<Agendamento> findByMotoristaAndStatusOrderByDataHoraSaidaAsc(Motorista motorista, StatusAgendamento status);
 }

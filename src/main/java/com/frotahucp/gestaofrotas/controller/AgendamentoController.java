@@ -13,7 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import com.frotahucp.gestaofrotas.model.StatusAgendamento;
-
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal; 
 import org.springframework.security.core.userdetails.UserDetails; 
 
@@ -82,8 +82,27 @@ public class AgendamentoController {
 
     @GetMapping("/meus-agendamentos")
     @PreAuthorize("hasRole('MOTORISTA')")
-    public ResponseEntity<List<AgendamentoResponse>> listarMeusAgendamentos(@AuthenticationPrincipal UserDetails userDetails) {
-        List<AgendamentoResponse> agendamentos = agendamentoService.listarAgendamentosDoMotorista(userDetails);
+    public ResponseEntity<List<AgendamentoResponse>> listarMeusAgendamentos(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(required = false) StatusAgendamento status) { // Adiciona o parâmetro opcional
+        
+        List<AgendamentoResponse> agendamentos = agendamentoService.listarAgendamentosDoMotorista(userDetails, status);
         return ResponseEntity.ok(agendamentos);
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'MOTORISTA')")
+    public ResponseEntity<?> buscarAgendamentoPorId(@PathVariable Long id,
+                                                    @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            AgendamentoResponse response = agendamentoService.buscarAgendamentoDetalhado(id, userDetails);
+            return ResponseEntity.ok(response);
+        } catch (AccessDeniedException e) { // <-- ESPECÍFICO PRIMEIRO
+            // Captura a negação de acesso do serviço e retorna 403 Forbidden
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (RuntimeException e) { // <-- GENÉRICO DEPOIS
+            // Captura outros erros de tempo de execução como "Agendamento não encontrado" e retorna 404 Not Found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 }   

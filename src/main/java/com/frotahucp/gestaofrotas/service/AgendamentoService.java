@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.jpa.domain.Specification; 
+import org.springframework.security.access.AccessDeniedException;
 import jakarta.persistence.criteria.Predicate; 
 import java.time.LocalDate; 
 import java.util.ArrayList; 
@@ -161,17 +162,45 @@ public class AgendamentoService {
     }    
 
     @Transactional(readOnly = true)
-    public List<AgendamentoResponse> listarAgendamentosDoMotorista(UserDetails userDetails) {
-        // 1. Encontra o motorista com base no e-mail do usuário autenticado
+    public List<AgendamentoResponse> listarAgendamentosDoMotorista(UserDetails userDetails, StatusAgendamento status) {
         Motorista motorista = motoristaRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("Motorista não encontrado para o usuário autenticado."));
 
-        // 2. Usa o novo método do repositório para buscar e ordenar os agendamentos
-        List<Agendamento> agendamentos = agendamentoRepository.findByMotoristaOrderByDataHoraSaidaAsc(motorista);
+        List<Agendamento> agendamentos;
 
-        // 3. Mapeia as entidades para DTOs de resposta
+        if (status != null) {
+            // Se um status for fornecido, filtra por ele (RF004 - Histórico)
+            agendamentos = agendamentoRepository.findByMotoristaAndStatusOrderByDataHoraSaidaAsc(motorista, status);
+        } else {
+            // Se nenhum status for fornecido, retorna todos (RF002 - Página Inicial)
+            agendamentos = agendamentoRepository.findByMotoristaOrderByDataHoraSaidaAsc(motorista);
+        }
+
         return agendamentos.stream()
                            .map(AgendamentoResponse::new)
                            .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public AgendamentoResponse buscarAgendamentoDetalhado(Long agendamentoId, UserDetails currentUser) {
+        // 1. Busca o agendamento pelo ID
+        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+                .orElseThrow(() -> new RuntimeException("Agendamento não encontrado com o ID: " + agendamentoId));
+
+        // 2. Lógica de Autorização
+        boolean isAdministrador = currentUser.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMINISTRADOR"));
+        
+        boolean isMotoristaDono = currentUser.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_MOTORISTA")) &&
+                agendamento.getMotorista().getEmail().equals(currentUser.getUsername());
+
+        // Se não for admin E não for o motorista dono do agendamento, nega o acesso.
+        if (!isAdministrador && !isMotoristaDono) {
+            throw new AccessDeniedException("Você não tem permissão para visualizar este agendamento.");
+        }
+
+        // 3. Se autorizado, retorna o DTO de resposta
+        return new AgendamentoResponse(agendamento);
     }
 }
