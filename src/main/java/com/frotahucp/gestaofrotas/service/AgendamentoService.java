@@ -12,6 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.jpa.domain.Specification; 
+import jakarta.persistence.criteria.Predicate; 
+import java.time.LocalDate; 
+import java.util.ArrayList; 
+import java.util.List; 
+import java.util.stream.Collectors; 
 
 import java.time.LocalDateTime;
 
@@ -115,4 +121,42 @@ public class AgendamentoService {
         Agendamento agendamentoSalvo = agendamentoRepository.save(agendamento);
         return new AgendamentoResponse(agendamentoSalvo);
     }
+
+    @Transactional(readOnly = true)
+    public List<AgendamentoResponse> listarAgendamentosFiltrados(
+            LocalDate dataInicio, LocalDate dataFim, Long motoristaId, StatusAgendamento status) {
+        
+        // Specification é usada para construir a query dinamicamente
+        Specification<Agendamento> spec = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (dataInicio != null) {
+                // Adiciona filtro: data/hora de saída >= data de início fornecida
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("dataHoraSaida"), dataInicio.atStartOfDay()));
+            }
+            if (dataFim != null) {
+                // Adiciona filtro: data/hora de saída <= data de fim fornecida
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("dataHoraSaida"), dataFim.atTime(23, 59, 59)));
+            }
+            if (motoristaId != null) {
+                // Adiciona filtro: o ID do motorista associado deve ser igual ao fornecido
+                predicates.add(criteriaBuilder.equal(root.get("motorista").get("id"), motoristaId));
+            }
+            if (status != null) {
+                // Adiciona filtro: o status do agendamento deve ser igual ao fornecido
+                predicates.add(criteriaBuilder.equal(root.get("status"), status));
+            }
+
+            // Combina todos os predicados (filtros) com um "AND"
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+
+        // Usa o repositório para encontrar todos os agendamentos que correspondem à especificação
+        List<Agendamento> agendamentos = agendamentoRepository.findAll(spec);
+        
+        // Mapeia a lista de entidades para uma lista de DTOs de resposta
+        return agendamentos.stream()
+                           .map(AgendamentoResponse::new)
+                           .collect(Collectors.toList());
+    }    
 }

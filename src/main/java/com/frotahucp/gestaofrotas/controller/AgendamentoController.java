@@ -12,6 +12,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import com.frotahucp.gestaofrotas.model.StatusAgendamento;
+
+import org.springframework.format.annotation.DateTimeFormat; 
+import java.time.LocalDate; 
+import java.util.List; 
 
 @RestController
 @RequestMapping("/api/agendamentos")
@@ -55,5 +60,20 @@ public class AgendamentoController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<List<AgendamentoResponse>> listarAgendamentos(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @RequestParam(required = false) Long motoristaId,
+            @RequestParam(required = false) StatusAgendamento status) {
+        
+        List<AgendamentoResponse> agendamentos = agendamentoService.listarAgendamentosFiltrados(
+                dataInicio, dataFim, motoristaId, status
+        );
+        
+        return ResponseEntity.ok(agendamentos);
     }
 }   
