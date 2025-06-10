@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class ManutencaoService {
 
@@ -29,7 +32,7 @@ public class ManutencaoService {
         // 2. Atualiza o status do veículo para EM_MANUTENCAO
         veiculo.setStatus(StatusVeiculo.EM_MANUTENCAO);
         // Opcional: Atualizar a quilometragem do veículo se a da manutenção for maior
-        if (request.getQuilometragem() > veiculo.getQuilometragemAtual()){
+        if (request.getQuilometragem() > veiculo.getQuilometragemAtual()) {
             veiculo.setQuilometragemAtual(request.getQuilometragem());
         }
 
@@ -43,9 +46,23 @@ public class ManutencaoService {
         manutencao.setQuilometragem(request.getQuilometragem());
 
         Manutencao salva = manutencaoRepository.save(manutencao);
-        
-        // A anotação @Transactional garante que a alteração no veículo também será salva
-        
+
+        // A anotação @Transactional garante que a alteração no veículo também será
+        // salva
+
         return new ManutencaoResponse(salva);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ManutencaoResponse> listarManutencoesPorVeiculo(Long veiculoId) {
+        // Valida se o veículo existe
+        veiculoRepository.findById(veiculoId)
+                .orElseThrow(() -> new RuntimeException("Veículo não encontrado com o ID: " + veiculoId));
+
+        List<Manutencao> manutencoes = manutencaoRepository.findByVeiculoIdOrderByDataDesc(veiculoId);
+
+        return manutencoes.stream()
+                .map(ManutencaoResponse::new)
+                .collect(Collectors.toList());
     }
 }
