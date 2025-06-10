@@ -2,6 +2,8 @@ package com.frotahucp.gestaofrotas.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "agendamentos")
@@ -21,6 +23,10 @@ public class Agendamento {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "motorista_id", nullable = false)
     private Motorista motorista;
+
+    @OneToMany(mappedBy = "agendamento", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("dataHoraAlteracao ASC")
+    private List<HistoricoStatusAgendamento> historicoStatus = new ArrayList<>();
 
     @Column(name = "data_hora_saida", nullable = false)
     private LocalDateTime dataHoraSaida;
@@ -55,12 +61,10 @@ public class Agendamento {
     @Column(name = "observacoes_retorno", columnDefinition = "TEXT")
     private String observacoesRetorno;
 
-    
     // --- Construtor Padrão ---
     public Agendamento() {
     }
 
-    
     // --- Getters e Setters ---
 
     public Long getId() {
@@ -165,6 +169,14 @@ public class Agendamento {
 
     public void setObservacoesRetorno(String observacoesRetorno) {
         this.observacoesRetorno = observacoesRetorno;
+    }
+
+    public List<HistoricoStatusAgendamento> getHistoricoStatus() {
+        return historicoStatus;
+    }
+
+    public void setHistoricoStatus(List<HistoricoStatusAgendamento> historicoStatus) {
+        this.historicoStatus = historicoStatus;
     }
 
 }
