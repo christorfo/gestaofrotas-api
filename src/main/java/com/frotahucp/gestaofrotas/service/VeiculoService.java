@@ -3,6 +3,7 @@ package com.frotahucp.gestaofrotas.service;
 import com.frotahucp.gestaofrotas.model.Veiculo;
 import com.frotahucp.gestaofrotas.model.StatusVeiculo;
 import com.frotahucp.gestaofrotas.repository.VeiculoRepository;
+import com.frotahucp.gestaofrotas.model.StatusVeiculo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,9 +27,11 @@ public class VeiculoService {
     @Transactional
     public Veiculo cadastrarVeiculo(Veiculo veiculo) {
         // Poderia adicionar validações de negócio aqui antes de salvar.
-        // Por exemplo, verificar se a placa já existe, embora o BD já tenha uma constraint unique.
+        // Por exemplo, verificar se a placa já existe, embora o BD já tenha uma
+        // constraint unique.
         // Se o status não for fornecido, poderia definir um padrão, ex: DISPONIVEL.
-        // RF010 define os campos obrigatórios: Placa, Modelo, Tipo, Ano, Quilometragem atual, Status [cite: 23]
+        // RF010 define os campos obrigatórios: Placa, Modelo, Tipo, Ano, Quilometragem
+        // atual, Status [cite: 23]
         return veiculoRepository.save(veiculo);
     }
 
@@ -45,7 +48,9 @@ public class VeiculoService {
     @Transactional
     public Veiculo editarVeiculo(Long id, Veiculo veiculoDetalhes) {
         Veiculo veiculoExistente = veiculoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Veículo não encontrado com o ID: " + id)); // Substituir por exceção mais específica
+                .orElseThrow(() -> new RuntimeException("Veículo não encontrado com o ID: " + id)); // Substituir por
+                                                                                                    // exceção mais
+                                                                                                    // específica
 
         veiculoExistente.setPlaca(veiculoDetalhes.getPlaca());
         veiculoExistente.setModelo(veiculoDetalhes.getModelo());
@@ -61,19 +66,38 @@ public class VeiculoService {
     @Transactional
     public Veiculo inativarVeiculo(Long id) {
         Veiculo veiculoExistente = veiculoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Veículo não encontrado com o ID: " + id)); // Substituir por exceção mais específica
+                .orElseThrow(() -> new RuntimeException("Veículo não encontrado com o ID: " + id)); // Substituir por
+                                                                                                    // exceção mais
+                                                                                                    // específica
 
         veiculoExistente.setStatus(StatusVeiculo.INATIVO);
         return veiculoRepository.save(veiculoExistente);
     }
 
-    // O RF010 [cite: 22] também menciona "Status (Disponível, Inativo ou Em Manutenção)"[cite: 23].
-    // Se precisar de uma funcionalidade para colocar "Em Manutenção" ou "Disponível" explicitamente:
+    // O RF010 [cite: 22] também menciona "Status (Disponível, Inativo ou Em
+    // Manutenção)"[cite: 23].
+    // Se precisar de uma funcionalidade para colocar "Em Manutenção" ou
+    // "Disponível" explicitamente:
     @Transactional
     public Veiculo atualizarStatusVeiculo(Long id, StatusVeiculo novoStatus) {
         Veiculo veiculoExistente = veiculoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Veículo não encontrado com o ID: " + id)); // Substituir por exceção mais específica
+                .orElseThrow(() -> new RuntimeException("Veículo não encontrado com o ID: " + id)); // Substituir por
+                                                                                                    // exceção mais
+                                                                                                    // específica
         veiculoExistente.setStatus(novoStatus);
         return veiculoRepository.save(veiculoExistente);
+    }
+
+    @Transactional
+    public Veiculo liberarVeiculoDaManutencao(Long id) {
+        Veiculo veiculo = veiculoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Veículo não encontrado com o ID: " + id));
+
+        if (veiculo.getStatus() != StatusVeiculo.EM_MANUTENCAO) {
+            throw new RuntimeException("Ação não permitida: O veículo não está em manutenção.");
+        }
+
+        veiculo.setStatus(StatusVeiculo.DISPONIVEL);
+        return veiculoRepository.save(veiculo);
     }
 }

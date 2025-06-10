@@ -6,6 +6,7 @@ import com.frotahucp.gestaofrotas.service.VeiculoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,7 +52,8 @@ public class VeiculoController {
         try {
             Veiculo veiculoAtualizado = veiculoService.editarVeiculo(id, veiculoDetalhes);
             return ResponseEntity.ok(veiculoAtualizado);
-        } catch (RuntimeException e) { // Idealmente, capturar uma exceção mais específica como ResourceNotFoundException
+        } catch (RuntimeException e) { // Idealmente, capturar uma exceção mais específica como
+                                       // ResourceNotFoundException
             return ResponseEntity.notFound().build();
         }
     }
@@ -70,23 +72,37 @@ public class VeiculoController {
         }
     }
 
-    // Exemplo de endpoint para ATUALIZAR STATUS de forma mais genérica (se necessário)
-    // Poderia ser um PATCH para /api/veiculos/{id}/status ou similar
-    /*
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<Veiculo> atualizarStatusVeiculo(@PathVariable Long id, @RequestBody StatusUpdateRequest statusUpdateRequest) {
+    @PostMapping("/{id}/liberar")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<?> liberarVeiculo(@PathVariable Long id) {
         try {
-            Veiculo veiculo = veiculoService.atualizarStatusVeiculo(id, statusUpdateRequest.getNovoStatus());
+            Veiculo veiculo = veiculoService.liberarVeiculoDaManutencao(id);
             return ResponseEntity.ok(veiculo);
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    // Classe auxiliar para o request body do status (exemplo)
-    static class StatusUpdateRequest {
-        private StatusVeiculo novoStatus;
-        public StatusVeiculo getNovoStatus() { return novoStatus; }
-        public void setNovoStatus(StatusVeiculo novoStatus) { this.novoStatus = novoStatus; }
-    }
-    */
+    // Exemplo de endpoint para ATUALIZAR STATUS de forma mais genérica (se
+    // necessário)
+    // Poderia ser um PATCH para /api/veiculos/{id}/status ou similar
+    /*
+     * @PatchMapping("/{id}/status")
+     * public ResponseEntity<Veiculo> atualizarStatusVeiculo(@PathVariable Long
+     * id, @RequestBody StatusUpdateRequest statusUpdateRequest) {
+     * try {
+     * Veiculo veiculo = veiculoService.atualizarStatusVeiculo(id,
+     * statusUpdateRequest.getNovoStatus());
+     * return ResponseEntity.ok(veiculo);
+     * } catch (RuntimeException e) {
+     * return ResponseEntity.notFound().build();
+     * }
+     * }
+     * // Classe auxiliar para o request body do status (exemplo)
+     * static class StatusUpdateRequest {
+     * private StatusVeiculo novoStatus;
+     * public StatusVeiculo getNovoStatus() { return novoStatus; }
+     * public void setNovoStatus(StatusVeiculo novoStatus) { this.novoStatus =
+     * novoStatus; }
+     * }
+     */
 }
