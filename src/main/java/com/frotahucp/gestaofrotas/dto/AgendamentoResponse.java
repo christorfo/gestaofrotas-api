@@ -21,7 +21,7 @@ public class AgendamentoResponse {
     // Construtor que mapeia a Entidade para o DTO
     public AgendamentoResponse(Agendamento agendamento) {
         this.id = agendamento.getId();
-        this.veiculo = new VeiculoResumoDto(agendamento.getVeiculo().getId(), agendamento.getVeiculo().getPlaca());
+        this.veiculo = new VeiculoResumoDto(agendamento.getVeiculo().getId(), agendamento.getVeiculo().getPlaca(), agendamento.getVeiculo().getQuilometragemAtual());
         this.motorista = new MotoristaResumoDto(agendamento.getMotorista().getId(), agendamento.getMotorista().getNomeCompleto());
         this.dataHoraSaida = agendamento.getDataHoraSaida();
         this.destino = agendamento.getDestino();
@@ -33,7 +33,7 @@ public class AgendamentoResponse {
     }
 
     // Sub-DTOs para resumos (evita expor a entidade inteira)
-    public record VeiculoResumoDto(Long id, String placa) {}
+    public record VeiculoResumoDto(Long id, String placa, int quilometragemAtual) {}
     public record MotoristaResumoDto(Long id, String nome) {}
 
     // Getters
