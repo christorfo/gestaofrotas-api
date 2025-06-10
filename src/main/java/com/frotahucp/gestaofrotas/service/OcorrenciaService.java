@@ -57,4 +57,17 @@ public class OcorrenciaService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public OcorrenciaResponse resolverOcorrencia(Long ocorrenciaId) {
+        Ocorrencia ocorrencia = ocorrenciaRepository.findById(ocorrenciaId)
+                .orElseThrow(() -> new RuntimeException("Ocorrência não encontrada com o ID: " + ocorrenciaId));
+
+        if (ocorrencia.getStatus() == StatusOcorrencia.RESOLVIDA) {
+            throw new RuntimeException("Esta ocorrência já foi resolvida.");
+        }
+
+        ocorrencia.setStatus(StatusOcorrencia.RESOLVIDA);
+        Ocorrencia salva = ocorrenciaRepository.save(ocorrencia);
+        return new OcorrenciaResponse(salva);
+    }
 }

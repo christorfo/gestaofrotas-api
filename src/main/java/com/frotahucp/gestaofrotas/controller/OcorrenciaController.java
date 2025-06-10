@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
 import java.util.List;
 
 @RestController
@@ -40,5 +42,16 @@ public class OcorrenciaController {
     public ResponseEntity<List<OcorrenciaResponse>> listarOcorrencias() {
         List<OcorrenciaResponse> response = ocorrenciaService.listarTodasOcorrencias();
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/resolver")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<?> resolverOcorrencia(@PathVariable Long id) {
+        try {
+            OcorrenciaResponse response = ocorrenciaService.resolverOcorrencia(id);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
