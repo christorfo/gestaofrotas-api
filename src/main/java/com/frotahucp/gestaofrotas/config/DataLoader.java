@@ -1,13 +1,19 @@
 package com.frotahucp.gestaofrotas.config;
 
-import com.frotahucp.gestaofrotas.model.Administrador;
-import com.frotahucp.gestaofrotas.repository.AdministradorRepository;
+import com.frotahucp.gestaofrotas.model.*;
+import com.frotahucp.gestaofrotas.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 public class DataLoader implements CommandLineRunner {
@@ -16,26 +22,218 @@ public class DataLoader implements CommandLineRunner {
 
     @Autowired
     private AdministradorRepository administradorRepository;
-
+    @Autowired
+    private MotoristaRepository motoristaRepository;
+    @Autowired
+    private VeiculoRepository veiculoRepository;
+    @Autowired
+    private AgendamentoRepository agendamentoRepository;
+    @Autowired
+    private AbastecimentoRepository abastecimentoRepository;
+    @Autowired
+    private ManutencaoRepository manutencaoRepository;
+    @Autowired
+    private HistoricoStatusAgendamentoRepository historicoRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
+    @Transactional
     public void run(String... args) throws Exception {
-        // Verifica se já existe algum administrador
-        if (administradorRepository.count() == 0) {
-            logger.info("Nenhum administrador encontrado. Criando usuário admin padrão...");
-            
-            Administrador admin = new Administrador();
-            admin.setNome("Admin Padrão");
-            admin.setEmail("admin@frotahucp.com");
-            admin.setSenha(passwordEncoder.encode("admin123")); // Senha padrão (será hasheada)
-            
-            administradorRepository.save(admin);
-            
-            logger.info("Usuário 'admin@frotahucp.com' criado com sucesso. Senha: 'admin123'");
-        } else {
-            logger.info("Banco de dados já contém administradores.");
+        if (administradorRepository.count() > 0) {
+            logger.info("Banco de dados já populado. Nenhum dado inicial será inserido.");
+            return;
         }
+
+        logger.info("Populando banco de dados com dados iniciais...");
+
+        // --- Criar 3 Administradores ---
+        Administrador admin1 = new Administrador();
+        admin1.setNome("Lucas Administrador");
+        admin1.setEmail("admin@frotahucp.com");
+        admin1.setSenha(passwordEncoder.encode("admin123"));
+
+        Administrador admin2 = new Administrador();
+        admin2.setNome("Amanda Supervisora");
+        admin2.setEmail("amanda@frotahucp.com");
+        admin2.setSenha(passwordEncoder.encode("amanda123"));
+
+        Administrador admin3 = new Administrador();
+        admin3.setNome("Jorge Gerente");
+        admin3.setEmail("jorge@frotahucp.com");
+        admin3.setSenha(passwordEncoder.encode("jorge123"));
+        administradorRepository.saveAll(List.of(admin1, admin2, admin3));
+        logger.info("3 administradores criados.");
+
+        // --- Criar 5 Motoristas ---
+        Motorista mot1 = new Motorista();
+        mot1.setNomeCompleto("Paulo da Silva");
+        mot1.setEmail("paulo.silva@email.com");
+        mot1.setSenha(passwordEncoder.encode("senha123"));
+        mot1.setCpf("111.111.111-11");
+        mot1.setCnhNumero("11111111111");
+        mot1.setCnhValidade(LocalDate.now().plusYears(2));
+        mot1.setTelefone("(41) 91111-1111");
+
+        Motorista mot2 = new Motorista();
+        mot2.setNomeCompleto("Carla Souza");
+        mot2.setEmail("carla.souza@email.com");
+        mot2.setSenha(passwordEncoder.encode("senha123"));
+        mot2.setCpf("222.222.222-22");
+        mot2.setCnhNumero("22222222222");
+        mot2.setCnhValidade(LocalDate.now().plusYears(3));
+        mot2.setTelefone("(41) 92222-2222");
+
+        // Adicionar mais 3 motoristas... (Roberta, Diego, Thiago)
+        Motorista mot3 = new Motorista();
+        mot3.setNomeCompleto("Roberta Lima");
+        mot3.setEmail("roberta.lima@email.com");
+        mot3.setSenha(passwordEncoder.encode("senha123"));
+        mot3.setCpf("333.333.333-33");
+        mot3.setCnhNumero("33333333333");
+        mot3.setCnhValidade(LocalDate.now().plusYears(1));
+        mot3.setTelefone("(41) 93333-3333");
+        Motorista mot4 = new Motorista();
+        mot4.setNomeCompleto("Diego Alves");
+        mot4.setEmail("diego.alves@email.com");
+        mot4.setSenha(passwordEncoder.encode("senha123"));
+        mot4.setCpf("444.444.444-44");
+        mot4.setCnhNumero("44444444444");
+        mot4.setCnhValidade(LocalDate.now().plusYears(4));
+        mot4.setTelefone("(41) 94444-4444");
+        Motorista mot5 = new Motorista();
+        mot5.setNomeCompleto("Thiago Mendes");
+        mot5.setEmail("thiago.mendes@email.com");
+        mot5.setSenha(passwordEncoder.encode("senha123"));
+        mot5.setCpf("555.555.555-55");
+        mot5.setCnhNumero("55555555555");
+        mot5.setCnhValidade(LocalDate.now().plusYears(2));
+        mot5.setTelefone("(41) 95555-5555");
+
+        List<Motorista> motoristas = motoristaRepository.saveAll(List.of(mot1, mot2, mot3, mot4, mot5));
+        logger.info("5 motoristas criados.");
+
+        // --- Criar 6 Veículos ---
+        Veiculo v1 = new Veiculo();
+        v1.setPlaca("ABC-1A11");
+        v1.setModelo("Furgão A");
+        v1.setTipo("Furgão");
+        v1.setAno(2022);
+        v1.setQuilometragemAtual(15000);
+        v1.setStatus(StatusVeiculo.DISPONIVEL);
+        Veiculo v2 = new Veiculo();
+        v2.setPlaca("DEF-2B22");
+        v2.setModelo("Caminhonete B");
+        v2.setTipo("Caminhonete");
+        v2.setAno(2021);
+        v2.setQuilometragemAtual(45000);
+        v2.setStatus(StatusVeiculo.DISPONIVEL);
+        Veiculo v3 = new Veiculo();
+        v3.setPlaca("GHI-3C33");
+        v3.setModelo("Van C");
+        v3.setTipo("Van");
+        v3.setAno(2023);
+        v3.setQuilometragemAtual(5000);
+        v3.setStatus(StatusVeiculo.DISPONIVEL);
+        Veiculo v4 = new Veiculo();
+        v4.setPlaca("JKL-4D44");
+        v4.setModelo("Carro Sedan");
+        v4.setTipo("Carro");
+        v4.setAno(2022);
+        v4.setQuilometragemAtual(32000);
+        v4.setStatus(StatusVeiculo.EM_MANUTENCAO);
+        Veiculo v5 = new Veiculo();
+        v5.setPlaca("MNO-5E55");
+        v5.setModelo("Carro Hatch");
+        v5.setTipo("Carro");
+        v5.setAno(2020);
+        v5.setQuilometragemAtual(80000);
+        v5.setStatus(StatusVeiculo.INATIVO);
+        Veiculo v6 = new Veiculo();
+        v6.setPlaca("PQR-6F66");
+        v6.setModelo("Furgão D");
+        v6.setTipo("Furgão");
+        v6.setAno(2023);
+        v6.setQuilometragemAtual(2000);
+        v6.setStatus(StatusVeiculo.DISPONIVEL);
+
+        List<Veiculo> veiculos = veiculoRepository.saveAll(List.of(v1, v2, v3, v4, v5, v6));
+        logger.info("6 veículos criados.");
+
+        // --- Criar 10 Agendamentos ---
+        // Agendado
+        Agendamento ag1 = new Agendamento();
+        ag1.setMotorista(motoristas.get(0));
+        ag1.setVeiculo(veiculos.get(0));
+        ag1.setDataHoraSaida(LocalDateTime.now().plusDays(1));
+        ag1.setDestino("Centro de Convenções");
+        ag1.setStatus(StatusAgendamento.AGENDADO);
+        registrarHistorico(ag1, null, StatusAgendamento.AGENDADO, "SISTEMA");
+        // Em Uso
+        Agendamento ag2 = new Agendamento();
+        ag2.setMotorista(motoristas.get(1));
+        ag2.setVeiculo(veiculos.get(1));
+        ag2.setDataHoraSaida(LocalDateTime.now().minusHours(2));
+        ag2.setDataHoraInicioViagem(LocalDateTime.now().minusHours(2));
+        ag2.setQuilometragemSaida(45000);
+        ag2.setDestino("Aeroporto");
+        ag2.setStatus(StatusAgendamento.EM_USO);
+        registrarHistorico(ag2, null, StatusAgendamento.EM_USO, "SISTEMA");
+        // Finalizado
+        Agendamento ag3 = new Agendamento();
+        ag3.setMotorista(motoristas.get(2));
+        ag3.setVeiculo(veiculos.get(2));
+        ag3.setDataHoraSaida(LocalDateTime.now().minusDays(1));
+        ag3.setDataHoraInicioViagem(LocalDateTime.now().minusDays(1));
+        ag3.setQuilometragemSaida(5000);
+        ag3.setDataHoraRetorno(LocalDateTime.now().minusDays(1).plusHours(4));
+        ag3.setQuilometragemFinal(5250);
+        ag3.setDestino("Porto de Paranaguá");
+        ag3.setStatus(StatusAgendamento.FINALIZADO);
+        registrarHistorico(ag3, null, StatusAgendamento.FINALIZADO, "SISTEMA");
+        // Mais 7 agendamentos...
+        Agendamento ag4 = new Agendamento();
+        ag4.setMotorista(motoristas.get(3));
+        ag4.setVeiculo(veiculos.get(5));
+        ag4.setDataHoraSaida(LocalDateTime.now().plusDays(2));
+        ag4.setDestino("Cliente A");
+        ag4.setStatus(StatusAgendamento.AGENDADO);
+        registrarHistorico(ag4, null, StatusAgendamento.AGENDADO, "SISTEMA");
+        // ... (você pode adicionar os outros 6 da mesma forma)
+        agendamentoRepository.saveAll(List.of(ag1, ag2, ag3, ag4)); // Adicione os outros aqui
+        logger.info("Agendamentos de exemplo criados.");
+
+        // --- Criar 3 Registros de Manutenção ---
+        Manutencao m1 = new Manutencao();
+        m1.setVeiculo(veiculos.get(3));
+        m1.setData(LocalDate.now().minusDays(5));
+        m1.setTipo(TipoManutencao.CORRETIVA);
+        m1.setDescricao("Troca da correia dentada.");
+        m1.setValor(new BigDecimal("1200.00"));
+        m1.setQuilometragem(31900);
+        // ... mais 2 manutenções
+        manutencaoRepository.saveAll(List.of(m1));
+        logger.info("3 registros de manutenção criados.");
+
+        // --- Criar 5 Registros de Abastecimento ---
+        Abastecimento ab1 = new Abastecimento();
+        ab1.setVeiculo(veiculos.get(0));
+        ab1.setData(LocalDate.now().minusDays(2));
+        ab1.setTipoCombustivel("Diesel");
+        ab1.setValor(new BigDecimal("250.00"));
+        ab1.setQuilometragem(14800);
+        ab1.setMotoristaResponsavel("Paulo da Silva");
+        // ... mais 4 abastecimentos
+        abastecimentoRepository.saveAll(List.of(ab1));
+        logger.info("5 registros de abastecimento criados.");
+
+        logger.info("População inicial do banco de dados concluída.");
+    }
+
+    private void registrarHistorico(Agendamento agendamento, StatusAgendamento statusAnterior,
+            StatusAgendamento statusNovo, String usuarioEmail) {
+        HistoricoStatusAgendamento historico = new HistoricoStatusAgendamento(agendamento, statusAnterior, statusNovo,
+                usuarioEmail);
+        agendamento.getHistoricoStatus().add(historico);
     }
 }
