@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/ocorrencias")
@@ -24,12 +26,19 @@ public class OcorrenciaController {
     @PostMapping
     @PreAuthorize("hasRole('MOTORISTA')")
     public ResponseEntity<?> registrarOcorrencia(@RequestBody OcorrenciaRequest request,
-                                                  @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserDetails userDetails) {
         try {
             OcorrenciaResponse response = ocorrenciaService.registrarOcorrencia(request, userDetails);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<List<OcorrenciaResponse>> listarOcorrencias() {
+        List<OcorrenciaResponse> response = ocorrenciaService.listarTodasOcorrencias();
+        return ResponseEntity.ok(response);
     }
 }

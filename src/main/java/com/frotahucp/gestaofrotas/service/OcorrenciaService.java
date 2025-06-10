@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OcorrenciaService {
@@ -46,4 +48,13 @@ public class OcorrenciaService {
         Ocorrencia salva = ocorrenciaRepository.save(ocorrencia);
         return new OcorrenciaResponse(salva);
     }
+
+    @Transactional(readOnly = true)
+    public List<OcorrenciaResponse> listarTodasOcorrencias() {
+        List<Ocorrencia> ocorrencias = ocorrenciaRepository.findAllByOrderByDataHoraRegistroDesc();
+        return ocorrencias.stream()
+                .map(OcorrenciaResponse::new)
+                .collect(Collectors.toList());
+    }
+
 }
