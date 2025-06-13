@@ -41,23 +41,21 @@ public class DataLoader implements CommandLineRunner {
     @Transactional
     public void run(String... args) throws Exception {
         if (administradorRepository.count() > 0) {
-            logger.info("Banco de dados já populado. Nenhum dado inicial será inserido.");
+            logger.info("Banco de dados já populado.");
             return;
         }
 
-        logger.info("Populando banco de dados com dados iniciais...");
+        logger.info("Populando banco de dados com dados iniciais para teste...");
 
-        // --- Criar 3 Administradores ---
+        // --- 3 Administradores ---
         Administrador admin1 = new Administrador();
         admin1.setNome("Lucas Administrador");
         admin1.setEmail("admin@frotahucp.com");
         admin1.setSenha(passwordEncoder.encode("admin123"));
-
         Administrador admin2 = new Administrador();
         admin2.setNome("Amanda Supervisora");
         admin2.setEmail("amanda@frotahucp.com");
         admin2.setSenha(passwordEncoder.encode("amanda123"));
-
         Administrador admin3 = new Administrador();
         admin3.setNome("Jorge Gerente");
         admin3.setEmail("jorge@frotahucp.com");
@@ -65,7 +63,7 @@ public class DataLoader implements CommandLineRunner {
         administradorRepository.saveAll(List.of(admin1, admin2, admin3));
         logger.info("3 administradores criados.");
 
-        // --- Criar 5 Motoristas ---
+        // --- 5 Motoristas ---
         Motorista mot1 = new Motorista();
         mot1.setNomeCompleto("Paulo da Silva");
         mot1.setEmail("paulo.silva@email.com");
@@ -74,7 +72,6 @@ public class DataLoader implements CommandLineRunner {
         mot1.setCnhNumero("11111111111");
         mot1.setCnhValidade(LocalDate.now().plusYears(2));
         mot1.setTelefone("(41) 91111-1111");
-
         Motorista mot2 = new Motorista();
         mot2.setNomeCompleto("Carla Souza");
         mot2.setEmail("carla.souza@email.com");
@@ -83,8 +80,6 @@ public class DataLoader implements CommandLineRunner {
         mot2.setCnhNumero("22222222222");
         mot2.setCnhValidade(LocalDate.now().plusYears(3));
         mot2.setTelefone("(41) 92222-2222");
-
-        // Adicionar mais 3 motoristas... (Roberta, Diego, Thiago)
         Motorista mot3 = new Motorista();
         mot3.setNomeCompleto("Roberta Lima");
         mot3.setEmail("roberta.lima@email.com");
@@ -109,11 +104,10 @@ public class DataLoader implements CommandLineRunner {
         mot5.setCnhNumero("55555555555");
         mot5.setCnhValidade(LocalDate.now().plusYears(2));
         mot5.setTelefone("(41) 95555-5555");
-
         List<Motorista> motoristas = motoristaRepository.saveAll(List.of(mot1, mot2, mot3, mot4, mot5));
         logger.info("5 motoristas criados.");
 
-        // --- Criar 6 Veículos ---
+        // --- 6 Veículos ---
         Veiculo v1 = new Veiculo();
         v1.setPlaca("ABC-1A11");
         v1.setModelo("Furgão A");
@@ -156,54 +150,34 @@ public class DataLoader implements CommandLineRunner {
         v6.setAno(2023);
         v6.setQuilometragemAtual(2000);
         v6.setStatus(StatusVeiculo.DISPONIVEL);
-
         List<Veiculo> veiculos = veiculoRepository.saveAll(List.of(v1, v2, v3, v4, v5, v6));
         logger.info("6 veículos criados.");
 
-        // --- Criar 10 Agendamentos ---
-        // Agendado
-        Agendamento ag1 = new Agendamento();
-        ag1.setMotorista(motoristas.get(0));
-        ag1.setVeiculo(veiculos.get(0));
-        ag1.setDataHoraSaida(LocalDateTime.now().plusDays(1));
-        ag1.setDestino("Centro de Convenções");
-        ag1.setStatus(StatusAgendamento.AGENDADO);
-        registrarHistorico(ag1, null, StatusAgendamento.AGENDADO, "SISTEMA");
-        // Em Uso
-        Agendamento ag2 = new Agendamento();
-        ag2.setMotorista(motoristas.get(1));
-        ag2.setVeiculo(veiculos.get(1));
-        ag2.setDataHoraSaida(LocalDateTime.now().minusHours(2));
-        ag2.setDataHoraInicioViagem(LocalDateTime.now().minusHours(2));
-        ag2.setQuilometragemSaida(45000);
-        ag2.setDestino("Aeroporto");
-        ag2.setStatus(StatusAgendamento.EM_USO);
-        registrarHistorico(ag2, null, StatusAgendamento.EM_USO, "SISTEMA");
-        // Finalizado
-        Agendamento ag3 = new Agendamento();
-        ag3.setMotorista(motoristas.get(2));
-        ag3.setVeiculo(veiculos.get(2));
-        ag3.setDataHoraSaida(LocalDateTime.now().minusDays(1));
-        ag3.setDataHoraInicioViagem(LocalDateTime.now().minusDays(1));
-        ag3.setQuilometragemSaida(5000);
-        ag3.setDataHoraRetorno(LocalDateTime.now().minusDays(1).plusHours(4));
-        ag3.setQuilometragemFinal(5250);
-        ag3.setDestino("Porto de Paranaguá");
-        ag3.setStatus(StatusAgendamento.FINALIZADO);
-        registrarHistorico(ag3, null, StatusAgendamento.FINALIZADO, "SISTEMA");
-        // Mais 7 agendamentos...
-        Agendamento ag4 = new Agendamento();
-        ag4.setMotorista(motoristas.get(3));
-        ag4.setVeiculo(veiculos.get(5));
-        ag4.setDataHoraSaida(LocalDateTime.now().plusDays(2));
-        ag4.setDestino("Cliente A");
-        ag4.setStatus(StatusAgendamento.AGENDADO);
-        registrarHistorico(ag4, null, StatusAgendamento.AGENDADO, "SISTEMA");
-        // ... (você pode adicionar os outros 6 da mesma forma)
-        agendamentoRepository.saveAll(List.of(ag1, ag2, ag3, ag4)); // Adicione os outros aqui
-        logger.info("Agendamentos de exemplo criados.");
+        // --- 10 Agendamentos ---
+        criarAgendamento(motoristas.get(0), veiculos.get(0), LocalDateTime.now().plusDays(1), "Centro de Convenções",
+                StatusAgendamento.AGENDADO);
+        criarAgendamento(motoristas.get(1), veiculos.get(1), LocalDateTime.now().plusDays(2), "Aeroporto Afonso Pena",
+                StatusAgendamento.AGENDADO);
+        criarAgendamento(motoristas.get(2), veiculos.get(2), LocalDateTime.now().plusDays(3), "Porto de Paranaguá",
+                StatusAgendamento.AGENDADO);
+        criarAgendamentoFinalizado(motoristas.get(3), veiculos.get(5), LocalDateTime.now().minusDays(1), "Cliente A",
+                2000, 2150);
+        criarAgendamentoFinalizado(motoristas.get(4), veiculos.get(0), LocalDateTime.now().minusDays(2), "Cliente B",
+                15000, 15200);
+        criarAgendamentoEmUso(motoristas.get(0), veiculos.get(2), LocalDateTime.now().minusHours(3), "Fornecedor Z",
+                5250);
+        // Adicionar mais 4 para completar 10...
+        criarAgendamento(motoristas.get(1), veiculos.get(5), LocalDateTime.now().plusDays(5), "Cliente C",
+                StatusAgendamento.AGENDADO);
+        criarAgendamento(motoristas.get(2), veiculos.get(0), LocalDateTime.now().plusDays(6), "Cliente D",
+                StatusAgendamento.AGENDADO);
+        criarAgendamentoFinalizado(motoristas.get(3), veiculos.get(1), LocalDateTime.now().minusDays(3), "Cliente E",
+                45200, 45400);
+        criarAgendamento(motoristas.get(4), veiculos.get(2), LocalDateTime.now().plusDays(4), "Sede da Empresa",
+                StatusAgendamento.CANCELADO);
+        logger.info("10 agendamentos criados.");
 
-        // --- Criar 3 Registros de Manutenção ---
+        // --- 3 Registros de Manutenção ---
         Manutencao m1 = new Manutencao();
         m1.setVeiculo(veiculos.get(3));
         m1.setData(LocalDate.now().minusDays(5));
@@ -211,29 +185,114 @@ public class DataLoader implements CommandLineRunner {
         m1.setDescricao("Troca da correia dentada.");
         m1.setValor(new BigDecimal("1200.00"));
         m1.setQuilometragem(31900);
-        // ... mais 2 manutenções
-        manutencaoRepository.saveAll(List.of(m1));
+        Manutencao m2 = new Manutencao();
+        m2.setVeiculo(veiculos.get(0));
+        m2.setData(LocalDate.now().minusMonths(1));
+        m2.setTipo(TipoManutencao.PREVENTIVA);
+        m2.setDescricao("Revisão de 15 mil km.");
+        m2.setValor(new BigDecimal("600.00"));
+        m2.setQuilometragem(14500);
+        Manutencao m3 = new Manutencao();
+        m3.setVeiculo(veiculos.get(1));
+        m3.setData(LocalDate.now().minusWeeks(2));
+        m3.setTipo(TipoManutencao.PREVENTIVA);
+        m3.setDescricao("Troca de pneus.");
+        m3.setValor(new BigDecimal("1800.00"));
+        m3.setQuilometragem(44000);
+        manutencaoRepository.saveAll(List.of(m1, m2, m3));
         logger.info("3 registros de manutenção criados.");
 
-        // --- Criar 5 Registros de Abastecimento ---
+        // --- 5 Registros de Abastecimento ---
         Abastecimento ab1 = new Abastecimento();
         ab1.setVeiculo(veiculos.get(0));
         ab1.setData(LocalDate.now().minusDays(2));
         ab1.setTipoCombustivel("Diesel");
         ab1.setValor(new BigDecimal("250.00"));
-        ab1.setQuilometragem(14800);
+        ab1.setQuilometragem(15200);
         ab1.setMotoristaResponsavel("Paulo da Silva");
-        // ... mais 4 abastecimentos
-        abastecimentoRepository.saveAll(List.of(ab1));
+        Abastecimento ab2 = new Abastecimento();
+        ab2.setVeiculo(veiculos.get(1));
+        ab2.setData(LocalDate.now().minusDays(3));
+        ab2.setTipoCombustivel("Gasolina");
+        ab2.setValor(new BigDecimal("300.00"));
+        ab2.setQuilometragem(45400);
+        ab2.setMotoristaResponsavel("Diego Alves");
+        Abastecimento ab3 = new Abastecimento();
+        ab3.setVeiculo(veiculos.get(2));
+        ab3.setData(LocalDate.now().minusDays(1));
+        ab3.setTipoCombustivel("Diesel");
+        ab3.setValor(new BigDecimal("280.00"));
+        ab3.setQuilometragem(5250);
+        ab3.setMotoristaResponsavel("Roberta Lima");
+        Abastecimento ab4 = new Abastecimento();
+        ab4.setVeiculo(veiculos.get(5));
+        ab4.setData(LocalDate.now().minusDays(4));
+        ab4.setTipoCombustivel("Diesel");
+        ab4.setValor(new BigDecimal("210.00"));
+        ab4.setQuilometragem(2150);
+        ab4.setMotoristaResponsavel("Thiago Mendes");
+        Abastecimento ab5 = new Abastecimento();
+        ab5.setVeiculo(veiculos.get(0));
+        ab5.setData(LocalDate.now().minusDays(1));
+        ab5.setTipoCombustivel("Diesel");
+        ab5.setValor(new BigDecimal("150.00"));
+        ab5.setQuilometragem(15300);
+        ab5.setMotoristaResponsavel("Paulo da Silva");
+        abastecimentoRepository.saveAll(List.of(ab1, ab2, ab3, ab4, ab5));
         logger.info("5 registros de abastecimento criados.");
 
         logger.info("População inicial do banco de dados concluída.");
+    }
+
+    private void criarAgendamento(Motorista motorista, Veiculo veiculo, LocalDateTime saida, String destino,
+            StatusAgendamento status) {
+        Agendamento ag = new Agendamento();
+        ag.setMotorista(motorista);
+        ag.setVeiculo(veiculo);
+        ag.setDataHoraSaida(saida);
+        ag.setDestino(destino);
+        ag.setStatus(status);
+        agendamentoRepository.save(ag);
+        registrarHistorico(ag, null, status, "SISTEMA");
+    }
+
+    private void criarAgendamentoFinalizado(Motorista motorista, Veiculo veiculo, LocalDateTime saida, String destino,
+            int kmSaida, int kmFinal) {
+        Agendamento ag = new Agendamento();
+        ag.setMotorista(motorista);
+        ag.setVeiculo(veiculo);
+        ag.setDataHoraSaida(saida);
+        ag.setDestino(destino);
+        ag.setStatus(StatusAgendamento.FINALIZADO);
+        ag.setDataHoraInicioViagem(saida.plusMinutes(5));
+        ag.setQuilometragemSaida(kmSaida);
+        ag.setDataHoraRetorno(saida.plusHours(3));
+        ag.setQuilometragemFinal(kmFinal);
+        agendamentoRepository.save(ag);
+        registrarHistorico(ag, null, StatusAgendamento.AGENDADO, "SISTEMA");
+        registrarHistorico(ag, StatusAgendamento.AGENDADO, StatusAgendamento.EM_USO, motorista.getEmail());
+        registrarHistorico(ag, StatusAgendamento.EM_USO, StatusAgendamento.FINALIZADO, motorista.getEmail());
+    }
+
+    private void criarAgendamentoEmUso(Motorista motorista, Veiculo veiculo, LocalDateTime saida, String destino,
+            int kmSaida) {
+        Agendamento ag = new Agendamento();
+        ag.setMotorista(motorista);
+        ag.setVeiculo(veiculo);
+        ag.setDataHoraSaida(saida);
+        ag.setDestino(destino);
+        ag.setStatus(StatusAgendamento.EM_USO);
+        ag.setDataHoraInicioViagem(saida.plusMinutes(5));
+        ag.setQuilometragemSaida(kmSaida);
+        agendamentoRepository.save(ag);
+        registrarHistorico(ag, null, StatusAgendamento.AGENDADO, "SISTEMA");
+        registrarHistorico(ag, StatusAgendamento.AGENDADO, StatusAgendamento.EM_USO, motorista.getEmail());
     }
 
     private void registrarHistorico(Agendamento agendamento, StatusAgendamento statusAnterior,
             StatusAgendamento statusNovo, String usuarioEmail) {
         HistoricoStatusAgendamento historico = new HistoricoStatusAgendamento(agendamento, statusAnterior, statusNovo,
                 usuarioEmail);
-        agendamento.getHistoricoStatus().add(historico);
+        historicoRepository.save(historico);
     }
 }
