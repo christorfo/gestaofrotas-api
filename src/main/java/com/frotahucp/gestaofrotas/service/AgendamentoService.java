@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class AgendamentoService {
@@ -143,28 +144,33 @@ public class AgendamentoService {
     }
 
     @Transactional(readOnly = true)
-    public List<AgendamentoResponse> listarAgendamentosFiltrados(LocalDate dataInicio, LocalDate dataFim,
-            Long motoristaId, StatusAgendamento status) {
-        Specification<Agendamento> spec = (root, query, criteriaBuilder) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            if (dataInicio != null) {
-                predicates.add(
-                        criteriaBuilder.greaterThanOrEqualTo(root.get("dataHoraSaida"), dataInicio.atStartOfDay()));
-            }
-            if (dataFim != null) {
-                predicates
-                        .add(criteriaBuilder.lessThanOrEqualTo(root.get("dataHoraSaida"), dataFim.atTime(23, 59, 59)));
-            }
-            if (motoristaId != null) {
-                predicates.add(criteriaBuilder.equal(root.get("motorista").get("id"), motoristaId));
-            }
-            if (status != null) {
-                predicates.add(criteriaBuilder.equal(root.get("status"), status));
-            }
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-        };
-        List<Agendamento> agendamentos = agendamentoRepository.findAll(spec);
-        return agendamentos.stream().map(AgendamentoResponse::new).collect(Collectors.toList());
+    public List<AgendamentoResponse> listarAgendamentosFiltrados(
+            LocalDate dataInicio, LocalDate dataFim, Long motoristaId, StatusAgendamento status) {
+
+        // 1. Usa o novo método do repositório para buscar tudo de uma vez
+        List<Agendamento> todosAgendamentos = agendamentoRepository.findAllWithDetails();
+
+        // 2. Aplica os filtros na memória usando Streams do Java
+        Stream<Agendamento> agendamentosStream = todosAgendamentos.stream();
+
+        if (dataInicio != null) {
+            agendamentosStream = agendamentosStream
+                    .filter(a -> !a.getDataHoraSaida().toLocalDate().isBefore(dataInicio));
+        }
+        if (dataFim != null) {
+            agendamentosStream = agendamentosStream.filter(a -> !a.getDataHoraSaida().toLocalDate().isAfter(dataFim));
+        }
+        if (motoristaId != null) {
+            agendamentosStream = agendamentosStream.filter(a -> a.getMotorista().getId().equals(motoristaId));
+        }
+        if (status != null) {
+            agendamentosStream = agendamentosStream.filter(a -> a.getStatus().equals(status));
+        }
+
+        // 3. Coleta os resultados filtrados e mapeia para o DTO de resposta
+        return agendamentosStream
+                .map(AgendamentoResponse::new)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
