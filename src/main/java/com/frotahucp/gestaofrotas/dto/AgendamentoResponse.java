@@ -2,7 +2,6 @@ package com.frotahucp.gestaofrotas.dto;
 
 import com.frotahucp.gestaofrotas.model.Agendamento;
 import com.frotahucp.gestaofrotas.model.StatusAgendamento;
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,7 +12,7 @@ public class AgendamentoResponse {
     // Sub-DTO (record) para o histórico, para uma resposta mais limpa
     public record HistoricoDto(
             String statusNovo,
-            @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss") LocalDateTime dataHoraAlteracao,
+            LocalDateTime dataHoraAlteracao, // Sem @JsonFormat
             String usuarioResponsavel) {
     }
 
@@ -28,8 +27,7 @@ public class AgendamentoResponse {
     private Long id;
     private VeiculoResumoDto veiculo;
     private MotoristaResumoDto motorista;
-    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-    private LocalDateTime dataHoraSaida;
+    private LocalDateTime dataHoraSaida; // Sem @JsonFormat
     private String destino;
     private StatusAgendamento status;
     private String justificativa;
@@ -37,11 +35,9 @@ public class AgendamentoResponse {
     private String observacoesRetorno;
     private Integer quilometragemSaida;
     private Integer quilometragemFinal;
-    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-    private LocalDateTime dataHoraInicioViagem;
-    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-    private LocalDateTime dataHoraRetorno;
-    private List<HistoricoDto> historicoStatus; // Lista de histórico
+    private LocalDateTime dataHoraInicioViagem; // Sem @JsonFormat
+    private LocalDateTime dataHoraRetorno; // Sem @JsonFormat
+    private List<HistoricoDto> historicoStatus;
 
     // Construtor que mapeia a Entidade para este DTO
     public AgendamentoResponse(Agendamento agendamento) {
@@ -61,7 +57,6 @@ public class AgendamentoResponse {
         this.dataHoraInicioViagem = agendamento.getDataHoraInicioViagem();
         this.dataHoraRetorno = agendamento.getDataHoraRetorno();
 
-        // Mapeia a lista de entidades de histórico para uma lista de DTOs de histórico
         this.historicoStatus = agendamento.getHistoricoStatus().stream()
                 .map(h -> new HistoricoDto(
                         h.getStatusNovo().toString(),
