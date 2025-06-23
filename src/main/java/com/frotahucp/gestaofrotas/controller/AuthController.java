@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.frotahucp.gestaofrotas.model.Administrador;
+import com.frotahucp.gestaofrotas.model.Motorista;
+import com.frotahucp.gestaofrotas.repository.AdministradorRepository;
+import com.frotahucp.gestaofrotas.repository.MotoristaRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,12 +34,17 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private MotoristaRepository motoristaRepository;
+
+    @Autowired
+    private AdministradorRepository administradorRepository;
+
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getSenha())
-            );
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getSenha()));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -46,7 +55,13 @@ public class AuthController {
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
 
-            return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), roles));
+            String nome = roles.contains("ROLE_ADMINISTRADOR")
+                    ? administradorRepository.findByEmail(userDetails.getUsername()).map(Administrador::getNome)
+                            .orElse("Admin")
+                    : motoristaRepository.findByEmail(userDetails.getUsername()).map(Motorista::getNomeCompleto)
+                            .orElse("Motorista");
+
+            return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), nome, roles));
 
         } catch (BadCredentialsException e) {
             // Retorna 401 Unauthorized se as credenciais forem inválidas
