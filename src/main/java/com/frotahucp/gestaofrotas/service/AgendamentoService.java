@@ -147,18 +147,20 @@ public class AgendamentoService {
     public List<AgendamentoResponse> listarAgendamentosFiltrados(
             LocalDate dataInicio, LocalDate dataFim, Long motoristaId, StatusAgendamento status) {
 
-        // 1. Usa o novo método do repositório para buscar tudo de uma vez
+        // 1. Usa o novo método do repositório para buscar tudo de uma vez, evitando
+        // Lazy Loading
         List<Agendamento> todosAgendamentos = agendamentoRepository.findAllWithDetails();
 
         // 2. Aplica os filtros na memória usando Streams do Java
         Stream<Agendamento> agendamentosStream = todosAgendamentos.stream();
 
         if (dataInicio != null) {
-            agendamentosStream = agendamentosStream
-                    .filter(a -> !a.getDataHoraSaida().toLocalDate().isBefore(dataInicio));
+            agendamentosStream = agendamentosStream.filter(
+                    a -> a.getDataHoraSaida() != null && !a.getDataHoraSaida().toLocalDate().isBefore(dataInicio));
         }
         if (dataFim != null) {
-            agendamentosStream = agendamentosStream.filter(a -> !a.getDataHoraSaida().toLocalDate().isAfter(dataFim));
+            agendamentosStream = agendamentosStream
+                    .filter(a -> a.getDataHoraSaida() != null && !a.getDataHoraSaida().toLocalDate().isAfter(dataFim));
         }
         if (motoristaId != null) {
             agendamentosStream = agendamentosStream.filter(a -> a.getMotorista().getId().equals(motoristaId));
