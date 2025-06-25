@@ -71,7 +71,7 @@ public class DataLoader implements CommandLineRunner {
                 mot1.setCpf("111.111.111-11");
                 mot1.setCnhNumero("11111111111");
                 mot1.setCnhValidade(LocalDate.now().plusYears(2));
-                mot1.setTelefone("(41) 91111-1111");
+                mot1.setTelefone("41911111111");
                 Motorista mot2 = new Motorista();
                 mot2.setNomeCompleto("Carla Souza");
                 mot2.setEmail("carla.souza@email.com");
@@ -79,7 +79,7 @@ public class DataLoader implements CommandLineRunner {
                 mot2.setCpf("222.222.222-22");
                 mot2.setCnhNumero("22222222222");
                 mot2.setCnhValidade(LocalDate.now().plusYears(3));
-                mot2.setTelefone("(41) 92222-2222");
+                mot2.setTelefone("41922222222");
                 Motorista mot3 = new Motorista();
                 mot3.setNomeCompleto("Roberta Lima");
                 mot3.setEmail("roberta.lima@email.com");
@@ -87,7 +87,7 @@ public class DataLoader implements CommandLineRunner {
                 mot3.setCpf("333.333.333-33");
                 mot3.setCnhNumero("33333333333");
                 mot3.setCnhValidade(LocalDate.now().plusYears(1));
-                mot3.setTelefone("(41) 93333-3333");
+                mot3.setTelefone("41933333333");
                 Motorista mot4 = new Motorista();
                 mot4.setNomeCompleto("Diego Alves");
                 mot4.setEmail("diego.alves@email.com");
@@ -95,7 +95,7 @@ public class DataLoader implements CommandLineRunner {
                 mot4.setCpf("444.444.444-44");
                 mot4.setCnhNumero("44444444444");
                 mot4.setCnhValidade(LocalDate.now().plusYears(4));
-                mot4.setTelefone("(41) 94444-4444");
+                mot4.setTelefone("41944444444");
                 Motorista mot5 = new Motorista();
                 mot5.setNomeCompleto("Thiago Mendes");
                 mot5.setEmail("thiago.mendes@email.com");
@@ -103,7 +103,7 @@ public class DataLoader implements CommandLineRunner {
                 mot5.setCpf("555.555.555-55");
                 mot5.setCnhNumero("55555555555");
                 mot5.setCnhValidade(LocalDate.now().plusYears(2));
-                mot5.setTelefone("(41) 95555-5555");
+                mot5.setTelefone("41955555555");
                 List<Motorista> motoristas = motoristaRepository.saveAll(List.of(mot1, mot2, mot3, mot4, mot5));
                 logger.info("5 motoristas criados.");
 
