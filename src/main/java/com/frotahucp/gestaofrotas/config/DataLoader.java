@@ -109,7 +109,7 @@ public class DataLoader implements CommandLineRunner {
 
                 // --- 6 Veículos ---
                 Veiculo v1 = new Veiculo();
-                v1.setPlaca("ABC-1A11");
+                v1.setPlaca("ABC-3A11");
                 v1.setModelo("Furgão A");
                 v1.setTipo("Furgão");
                 v1.setAno(2022);
