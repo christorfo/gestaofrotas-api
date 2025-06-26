@@ -23,7 +23,7 @@ public class MotoristaController {
         this.motoristaService = motoristaService;
     }
 
-    // Endpoint para CADASTRAR um novo motorista [cite: 24]
+    // Endpoint para CADASTRAR um novo motorista
     @PostMapping
     public ResponseEntity<?> cadastrarMotorista(@RequestBody Motorista motorista) {
         try {
@@ -51,17 +51,13 @@ public class MotoristaController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // Endpoint para EDITAR um motorista existente [cite: 26]
+    // Endpoint para EDITAR um motorista existente
     @PutMapping("/{id}")
     public ResponseEntity<?> editarMotorista(@PathVariable Long id, @RequestBody Motorista motoristaDetalhes) {
         try {
-            // A lógica de ViaCEP para o endereço [cite: 25, 43] seria idealmente tratada no serviço antes de chegar aqui,
-            // ou o serviço seria chamado para buscar e preencher o endereço.
             Motorista motoristaAtualizado = motoristaService.editarMotorista(id, motoristaDetalhes);
             return ResponseEntity.ok(motoristaAtualizado);
         } catch (RuntimeException e) {
-            // Captura exceções como "Motorista não encontrado" ou "CPF/Email duplicado"
-            // Poderia diferenciar os status HTTP com base no tipo de exceção
              if (e.getMessage().contains("não encontrado")) {
                 return ResponseEntity.notFound().build();
             }
@@ -69,7 +65,7 @@ public class MotoristaController {
         }
     }
 
-    // Endpoint para INATIVAR um motorista [cite: 26]
+    // Endpoint para INATIVAR um motorista
     @PostMapping("/{id}/inativar")
     public ResponseEntity<Motorista> inativarMotorista(@PathVariable Long id) {
         try {
